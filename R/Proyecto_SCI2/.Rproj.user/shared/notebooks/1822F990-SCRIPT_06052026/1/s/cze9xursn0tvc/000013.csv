@@ -1,0 +1,5 @@
+"0",""
+"0","boxplot(df$DQO,"
+"0","        main=""Demanda Química de Oxígeno (DQO)"","
+"0","        xlab=""DQO"","
+"0","        ylab=""Concentraciones"")"

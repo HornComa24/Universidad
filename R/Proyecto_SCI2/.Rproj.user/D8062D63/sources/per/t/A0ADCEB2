@@ -3,7 +3,7 @@
     "path": "C:/Users/Sebas/Desktop/Universidad/R/Proyecto_SCI2/SCRIPT_06052026.Rmd",
     "project_path": "SCRIPT_06052026.Rmd",
     "type": "r_markdown",
-    "hash": "736523497",
+    "hash": "543821137",
     "contents": "",
     "dirty": false,
     "created": 1778075437648.0,
@@ -11,14 +11,17 @@
     "relative_order": 1,
     "properties": {
         "source_window_id": "",
-        "Source": "Source"
+        "Source": "Source",
+        "cursorPosition": "62,18",
+        "scrollLine": "57",
+        "last_setup_crc32": "dfa8831792573595"
     },
     "folds": "",
-    "lastKnownWriteTime": 1778075319,
+    "lastKnownWriteTime": 1778075810,
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1778075319,
+    "last_content_update": 1778075810814,
     "read_only": false,
     "read_only_alternatives": []
 }

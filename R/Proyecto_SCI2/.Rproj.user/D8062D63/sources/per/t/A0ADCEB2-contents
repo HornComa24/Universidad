@@ -43,7 +43,7 @@ Una planta de tratamiento de aguas industriales busca modelar la Demanda Químic
 **Condición de los datos**
 
 ```{r}
-df <- read.csv("Bases/BD_Reactor.csv")
+df <- read.csv("BD_Reactor.csv")
 df <- df[,-1]
 head(df)
 str(df)

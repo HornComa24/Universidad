@@ -1,0 +1,6 @@
+"0","#par(mfrow=c(2,2))"
+"0","hist(df$DQO,"
+"0","     freq = FALSE,"
+"0","     main=""Demanda Química de Oxígeno"","
+"0","     xlab=""DQO"","
+"0","     ylab=""Densidad"")"
