@@ -1,0 +1,357 @@
+---
+title: "Modelo de Regresión Multiple"
+author: "Oscar Gamboa"
+date: "2026-05-06"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      warning = FALSE,
+                      message = FALSE)
+```
+
+```{r}
+library(dplyr)   # Manejo de data frame
+library(car)     # qqPlot()
+library(lmtest)  # bptest()
+library(skimr)   # descriptivo
+library(GGally)  # matriz de correlaciones
+```
+
+## Tratamiento de Aguas Residuales
+
+Este caso asociado a Biotecnológica o Ambiental, se enfoca en el Tratamiento de Aguas Residuales mediante procesos biológicos (lodos activos). En estos sistemas, la eficiencia de remoción de contaminantes depende de una red compleja de variables físicas y biológicas que están altamente interconectadas.
+
+*Objetivo*
+
+Optimización de un Reactor de Lodos Activos
+
+*Estudio solicitado*
+
+Una planta de tratamiento de aguas industriales busca modelar la Demanda Química de Oxígeno (DQO) final (mg/L) del efluente (caudal de agua que sale en el proceso). Un nivel bajo de DQO indica un proceso exitoso. Se han registrado 120 muestras con las siguientes variables:
+
+- (SSL) Sólidos Suspendidos en el Licor de Mezcla (mg/L): Cantidad de biomasa.
+- (SSVLM) Sólidos Volátiles (mg/L): Parte activa de la biomasa
+- (Aire) Tasa de Aireación ($m^{3}/h$): Oxígeno suministrado
+- (Temp) Temperatura del Reactor (°C)
+- (TRH) Tiempo de Retención Hidráulica (horas)
+- (Carga) Carga Orgánica de Entrada (mg/L)
+
+#### Analisis de los Datos
+
+**Condición de los datos**
+
+```{r}
+df <- read.csv("Bases/BD_Reactor.csv")
+df <- df[,-1]
+head(df)
+str(df)
+```
+
+Los resultados descriptivos obtenidos son:
+
+```{r}
+skim_without_charts(df)
+```
+
+Análisis de distribuciones:
+
+*Demanda Química de Oxígeno (DQO)*
+
+```{r}
+#par(mfrow=c(2,2))
+hist(df$DQO,
+     freq = FALSE,
+     main="Demanda Química de Oxígeno",
+     xlab="DQO",
+     ylab="Densidad")
+lines(density(df$DQO, adjust = 3), col="red", lty=3)
+
+boxplot(df$DQO,
+        main="Demanda Química de Oxígeno (DQO)",
+        xlab="DQO",
+        ylab="Concentraciones")
+
+qqPlot(df$SSLM,
+        main="QQ-Normal de DQO",
+        xlab="Cuantiles muestrales",
+        ylab="Cuantiles teóricos normales")
+
+#par(mfrow=c(1,1))
+```
+
+*Sólidos Suspendidos en el Licor de Mezcla*
+
+```{r}
+#par(mfrow=c(2,2))
+hist(df$SSLM,
+     freq = FALSE,
+     main="Sólidos Suspendidos en el Licor de Mezcla",
+     xlab="Sólidos",
+     ylab="Densidad")
+lines(density(df$SSLM, adjust = 3), col="red", lty=3)
+
+boxplot(df$SSLM,
+        main="Sólidos Suspendidos en el Licor de Mezcla",
+        xlab="Sólidos",
+        ylab="Concentraciones")
+
+qqPlot(df$SSLM,
+        main="QQ-Normal de SSL",
+        xlab="Cuantiles muestrales",
+        ylab="Cuantiles teóricos normales")
+
+#par(mfrow=c(1,1))
+```
+
+**Análisis de Correlaciones**
+
+```{r}
+ggpairs(data = df, 
+        lower = list(continuous = "smooth"),
+        diag = list(continuous = "barDiag"), 
+        axisLabels = "none")
+```
+
+#### Modelo de datos completos
+
+**Ajuste del modelo**
+
+El primer paso es explorar si un modelo completo es adecuado para explicar la variabilidad de la Demanda Quimica de Oxígeno (DQO).
+
+```{r}
+modelo_completo <- lm(data = df, DQO ~ .)
+anova(modelo_completo)
+```
+
+Se puede armar la tabla anova del modelo completo a partir de la salida de R como
+
+```{r}
+SST <- 0
+SSE <- 0
+SSR <- 0
+gl_T <- 0
+gl_E <- 0
+gl_R <- 0
+```
+
+**Bondad del modelo completo**
+
+El coeficiente $R^{2}$ y $R^{2}_{adj}$ se pueden obtener como:
+
+```{r}
+
+R2 <- 0
+R2_adj <- 0
+```
+
+Esto quiere decir que...
+
+
+**Modelo Ajustado e interpretación de coeficientes**
+
+*Coeficientes del modelo*
+
+Los coeficientes obtenidos son:
+
+```{r}
+
+```
+
+Estos coeficientes se interpretan como:
+
+- $\beta_{1}=$, esto quiere decir que ...
+
+*Intervalos de confianza para los coeficientes*
+
+
+
+
+*Modelo ajustado*
+
+El modelo ajustado obtenido es:
+
+$Y$
+
+
+
+#### Análisis de supuestos
+
+**Linealidad**
+
+Análisis de residuos parciales
+
+```{r}
+crPlots(modelo_completo)
+```
+
+
+
+**Normalidad de residuos**
+
+
+
+**Homocedasticidad**
+
+
+
+**Independencia**
+
+
+
+**Multicolinealidad**
+
+```{r}
+vif(modelo_completo)
+```
+
+Se puede notar que...
+
+
+#### Analisis de modelos independientes
+
+Suponga que debe analizar modelos con cada variable altamente correlacionada. Aanlicemos si es que tiene validez cada modelo establecido.
+
+```{r}
+modelo_SSL <- lm(data = df, DQO ~ SSLM + Aire + Temp + TRH)
+modelo_SSV <- lm(data = df, DQO ~ SSVLM + Aire + Temp + TRH)
+modelo_Carga <- lm(data = df, DQO ~ Carga + Aire + Temp + TRH)
+
+print(summary(modelo_SSL))
+print(summary(modelo_SSV))
+print(summary(modelo_Carga))
+```
+
+**Supuestos del modelo seleccionado**
+
+```{r}
+res <- modelo_Carga$residuals
+fit <- modelo_Carga$fitted.values
+res_std <- scale(res, center = TRUE, scale = TRUE)
+
+par(mfrow=c(2,2))
+
+hist(res_std, freq=FALSE)
+lines(density(res_std, adj=3), col="red")
+
+qqPlot(res)
+
+plot(fit, res_std, pch=16, col="blue")
+abline(h= 2, col="red", lty=3)
+abline(h=-2, col="red", lty=3)
+
+plot(res, type="b")
+
+
+par(mfrow=c(2,2))
+
+print(vif(modelo_Carga))
+```
+
+**Comparación de Intervalos para coeficientes**
+
+```{r}
+confint(modelo_completo)
+confint(modelo_Carga)
+```
+
+```{r}
+summary(modelo_completo)
+summary(modelo_Carga)
+```
+
+
+**Comparación de modelos anidados**
+
+```{r}
+modelo_hijo <- lm(data = df, DQO ~ Carga + Aire + Temp + TRH)
+modelo_padre <- lm(data = df, DQO ~ Carga + Aire + Temp + TRH + SSLM)
+
+anova(modelo_hijo, modelo_padre)
+```
+
+```{r}
+summary(modelo_padre)
+vif(modelo_padre)
+```
+
+
+```{r}
+modelo_hijo <- lm(data = df, DQO ~ Carga + Aire + Temp + TRH)
+modelo_padre <- lm(data = df, DQO ~ Carga + Aire + Temp + TRH + SSVLM)
+
+anova(modelo_hijo, modelo_padre)
+```
+
+```{r}
+summary(modelo_padre)
+vif(modelo_padre)
+```
+
+
+
+
+```{r}
+modelo_hijo <- lm(data = df, DQO ~ Carga + Aire + Temp + TRH + SSLM)
+modelo_padre <- lm(data = df, DQO ~ Carga + Aire + Temp + TRH + SSLM + SSVLM)
+
+anova(modelo_hijo, modelo_padre)
+```
+
+```{r}
+summary(modelo_padre)
+vif(modelo_padre)
+```
+
+
+
+
+
+
+```{r}
+modelo_hijo <- lm(data = df, DQO ~ Carga + Aire + Temp + TRH + SSVLM)
+modelo_padre <- lm(data = df, DQO ~ Carga + Aire + Temp + TRH + SSVLM + SSLM)
+
+anova(modelo_hijo, modelo_padre)
+```
+
+```{r}
+summary(modelo_padre)
+vif(modelo_padre)
+```
+
+
+
+
+
+
+
+## Caso de regresion polinomial
+
+```{r}
+
+df_auto <- mtcars
+plot(df_auto$disp, df_auto$mpg)
+scatter.smooth(df_auto$disp, df_auto$mpg)
+
+modelo_lineal <- lm(data = df_auto, mpg ~ disp)
+summary(modelo_lineal)
+
+modelo_cuad <- lm(data = df_auto, mpg ~ disp + I(disp^2))
+summary(modelo_cuad)
+
+modelo_cub <- lm(data = df_auto, mpg ~ disp + I(disp^2) + I(disp^3))
+summary(modelo_cub)
+
+
+plot(df_auto$disp, df_auto$mpg)
+abline(modelo_lineal, col="red")
+
+plot(df_auto$disp, df_auto$mpg)
+lines(sort(df_auto$disp),fitted(modelo_cuad)[order(df_auto$disp)], col="red", type = "l")
+
+plot(df_auto$disp, df_auto$mpg)
+lines(sort(df_auto$disp),fitted(modelo_cub)[order(df_auto$disp)], col="red", type = "l")
+
+```
