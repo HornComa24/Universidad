@@ -1,19 +1,17 @@
 {
-    "id": "68046B71",
-    "path": "C:/Users/Sebas/Desktop/Universidad/R/Proyecto_SCI2/script_laboratorio.Rmd",
-    "project_path": "script_laboratorio.Rmd",
+    "id": "A0ADCEB2",
+    "path": "C:/Users/Sebas/Desktop/Universidad/R/Proyecto_SCI2/SCRIPT_06052026.Rmd",
+    "project_path": "SCRIPT_06052026.Rmd",
     "type": "r_markdown",
     "hash": "736523497",
     "contents": "",
-    "dirty": true,
-    "created": 1778075338108.0,
+    "dirty": false,
+    "created": 1778075437648.0,
     "source_on_save": false,
     "relative_order": 1,
     "properties": {
         "source_window_id": "",
-        "Source": "Source",
-        "cursorPosition": "356,3",
-        "scrollLine": "334"
+        "Source": "Source"
     },
     "folds": "",
     "lastKnownWriteTime": 1778075319,
