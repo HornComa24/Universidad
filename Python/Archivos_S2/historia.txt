@@ -1,0 +1,16 @@
+Esther 7
+Juan 7
+Pedro 5
+Maria 7
+Juan 4
+Pedro 1
+Esther 6
+Maria 7
+Esther 6
+Juan 6
+Pedro 6
+Maria 6
+Esther 4
+Juan 5
+Pedro 7
+Maria 6.5

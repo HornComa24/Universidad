@@ -1,0 +1,13 @@
+Enero 20.0
+Febrero 19.5
+Marzo 20.2
+Abril 21.0
+Mayo 20.7
+Junio 21.1
+Julio 19.9
+Agosto 20.3
+Septiembre 20.5
+Octubre 21.2
+Noviembre 19.8
+Diciembre 20.6
+

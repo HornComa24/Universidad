@@ -1,0 +1,4 @@
+Tareas Administrativas: 4
+Tareas Productivas: 5
+Tareas Comunicativas: 1
+Reuniones: 0

@@ -1,0 +1,13 @@
+Enero 12.4
+Febrero 13.2
+Marzo 12.8
+Abril 13.5
+Mayo 14.0
+Junio 13.3
+Julio 12.7
+Agosto 13.1
+Septiembre 12.9
+Octubre 14.4
+Noviembre 13.6
+Diciembre 12.5
+

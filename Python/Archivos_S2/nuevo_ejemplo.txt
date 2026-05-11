@@ -1,0 +1,2 @@
+Estamos aprendiendo a trabajar con archivos en Python.
+Espero que encuentres esto util.

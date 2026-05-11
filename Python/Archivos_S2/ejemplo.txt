@@ -1,0 +1,3 @@
+Hola, este es un ejemplo de archivo de texto.
+Estamos aprendiendo a trabajar con archivos en Python.
+Espero que encuentres esto util.

@@ -1,0 +1,16 @@
+
+Nombre: Seba
+Edad: 18
+Correo: Sebastian141718floresflores@gmail.com
+
+Nombre: Javi
+Edad: 9
+Correo: Javiera17Flores18@gmail.com
+
+Nombre: Seba
+Edad: 19
+Correo: Sebastian141718floresflores@gmail.com
+
+Nombre: Diego
+Edad: 24
+Correo: diego96@gmail.com
