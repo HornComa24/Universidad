@@ -38,10 +38,11 @@ echo "${base64encode(file("${path.module}/scripts/poblar_datos.sh"))}" | base64 
 chmod +x /tmp/poblar_datos.sh
 bash /tmp/poblar_datos.sh
 
-# 4. Desempaquetar script de backup de GCP directamente a /opt/scripts
+# 4. Desempaquetar scripts de backup y restauracion directamente a /opt/scripts
 mkdir -p /opt/scripts
 echo "${base64encode(file("${path.module}/scripts/backup_gcp.sh"))}" | base64 -d > /opt/scripts/backup_gcp.sh
-chmod +x /opt/scripts/backup_gcp.sh
+echo "${base64encode(file("${path.module}/scripts/restore_gcp.sh"))}" | base64 -d > /opt/scripts/restore_gcp.sh
+chmod +x /opt/scripts/backup_gcp.sh /opt/scripts/restore_gcp.sh
 
 # 4. Generar la configuración de credenciales para Workload Identity Federation (WIF) compatible con IMDSv2
 gcloud iam workload-identity-pools create-cred-config \
@@ -51,8 +52,37 @@ gcloud iam workload-identity-pools create-cred-config \
   --enable-imdsv2 \
   --output-file=/opt/scripts/gcp-wif.json
 
-# 5. Programar en el crontab para ejecutarse cada 15 minutos
-(crontab -l 2>/dev/null | grep -v 'backup_gcp.sh'; echo '*/15 * * * * /opt/scripts/backup_gcp.sh') | crontab -
+# 5. Instalar y configurar el agente de AWS CloudWatch
+sudo mkdir -p /opt/aws/amazon-cloudwatch-agent/etc/
+sudo tee /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json << 'EOM'
+{
+  "agent": {
+    "metrics_collection_interval": 60,
+    "run_as_user": "root"
+  },
+  "logs": {
+    "logs_collected": {
+      "files": {
+        "collect_list": [
+          {
+            "file_path": "/var/log/backup_gcp.log",
+            "log_group_name": "/aws/ec2/backup_gcp.log",
+            "log_stream_name": "{instance_id}",
+            "retention_in_days": 7
+          }
+        ]
+      }
+    }
+  }
+}
+EOM
+
+sudo dnf install -y amazon-cloudwatch-agent || sudo yum install -y amazon-cloudwatch-agent
+sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
+
+# 6. Programar en el crontab para ejecutarse cada 15 minutos redireccionando logs
+touch /var/log/backup_gcp.log
+(crontab -l 2>/dev/null | grep -v 'backup_gcp.sh'; echo '*/15 * * * * /opt/scripts/backup_gcp.sh >> /var/log/backup_gcp.log 2>&1') | crontab -
 EOF
 
   user_data_postgres = <<-EOF
@@ -90,10 +120,11 @@ echo "${base64encode(file("${path.module}/scripts/poblar_datos.sh"))}" | base64 
 chmod +x /tmp/poblar_datos.sh
 bash /tmp/poblar_datos.sh
 
-# 4. Desempaquetar script de backup de GCP directamente a /opt/scripts
+# 4. Desempaquetar scripts de backup y restauracion directamente a /opt/scripts
 mkdir -p /opt/scripts
 echo "${base64encode(file("${path.module}/scripts/backup_gcp.sh"))}" | base64 -d > /opt/scripts/backup_gcp.sh
-chmod +x /opt/scripts/backup_gcp.sh
+echo "${base64encode(file("${path.module}/scripts/restore_gcp.sh"))}" | base64 -d > /opt/scripts/restore_gcp.sh
+chmod +x /opt/scripts/backup_gcp.sh /opt/scripts/restore_gcp.sh
 
 # 4. Generar la configuración de credenciales para Workload Identity Federation (WIF) compatible con IMDSv2
 gcloud iam workload-identity-pools create-cred-config \
@@ -103,8 +134,37 @@ gcloud iam workload-identity-pools create-cred-config \
   --enable-imdsv2 \
   --output-file=/opt/scripts/gcp-wif.json
 
-# 5. Programar en el crontab para ejecutarse cada 15 minutos
-(crontab -l 2>/dev/null | grep -v 'backup_gcp.sh'; echo '*/15 * * * * /opt/scripts/backup_gcp.sh') | crontab -
+# 5. Instalar y configurar el agente de AWS CloudWatch
+sudo mkdir -p /opt/aws/amazon-cloudwatch-agent/etc/
+sudo tee /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json << 'EOM'
+{
+  "agent": {
+    "metrics_collection_interval": 60,
+    "run_as_user": "root"
+  },
+  "logs": {
+    "logs_collected": {
+      "files": {
+        "collect_list": [
+          {
+            "file_path": "/var/log/backup_gcp.log",
+            "log_group_name": "/aws/ec2/backup_gcp.log",
+            "log_stream_name": "{instance_id}",
+            "retention_in_days": 7
+          }
+        ]
+      }
+    }
+  }
+}
+EOM
+
+sudo dnf install -y amazon-cloudwatch-agent || sudo yum install -y amazon-cloudwatch-agent
+sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
+
+# 6. Programar en el crontab para ejecutarse cada 15 minutos redireccionando logs
+touch /var/log/backup_gcp.log
+(crontab -l 2>/dev/null | grep -v 'backup_gcp.sh'; echo '*/15 * * * * /opt/scripts/backup_gcp.sh >> /var/log/backup_gcp.log 2>&1') | crontab -
 EOF
 }
 
