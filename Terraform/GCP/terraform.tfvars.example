@@ -1,0 +1,14 @@
+# =========================================================================
+# CONFIGURACIÓN DE VARIABLES PARA GCP
+# =========================================================================
+# Reemplace los valores a continuación con los de su propio entorno.
+
+# 1. El ID único de su proyecto de Google Cloud (GCP) - OBLIGATORIO
+project_id = "EL_ID_DE_TU_PROYECTO_GCP"
+
+# 2. Región de GCP donde se creará el bucket de respaldos
+gcp_region = "us-central1"
+
+# 3. ID de la cuenta de AWS de quien ejecutará el despliegue
+# (Requerido para la relación de confianza de Workload Identity Federation)
+aws_account_id = "EL_ID_DE_TU_CUENTA_AWS"
