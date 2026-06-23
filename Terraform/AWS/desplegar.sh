@@ -32,9 +32,9 @@ echo -e "${AZUL}[+] Inicializando y aplicando configuración en AWS...${NC}"
 
 # Inicializar y aplicar en AWS
 terraform init
-terraform apply \
+terraform apply -auto-approve \
   -var="gcp_sa_email=$GCP_SA_EMAIL" \
   -var="gcp_project_number=$GCP_PROJECT_NUMBER" \
   -var="gcp_pool_id=$GCP_POOL_ID" \
   -var="gcp_provider_id=$GCP_PROVIDER_ID" \
-  -var="gcp_backup_bucket=$GCP_BUCKET"
+  -var="gcp_backup_bucket=$GCP_BUCKET" "$@"

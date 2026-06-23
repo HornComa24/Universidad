@@ -35,4 +35,44 @@ resource "aws_ssm_parameter" "gcp_backup_bucket" {
   }
 }
 
+resource "aws_ssm_parameter" "script_instalar_mariadb" {
+  name        = "/scripts/instalar_mariadb"
+  description = "Script para instalar y configurar MariaDB"
+  type        = "String"
+  value       = file("${path.module}/scripts/instalar_mariadb.sh")
+  overwrite   = true
+}
+
+resource "aws_ssm_parameter" "script_instalar_postgresql" {
+  name        = "/scripts/instalar_postgresql"
+  description = "Script para instalar y configurar PostgreSQL"
+  type        = "String"
+  value       = file("${path.module}/scripts/instalar_postgresql.sh")
+  overwrite   = true
+}
+
+resource "aws_ssm_parameter" "script_poblar_datos" {
+  name        = "/scripts/poblar_datos"
+  description = "Script para poblar de datos aleatorios la base de datos"
+  type        = "String"
+  value       = file("${path.module}/scripts/poblar_datos.sh")
+  overwrite   = true
+}
+
+resource "aws_ssm_parameter" "script_backup_gcp" {
+  name        = "/scripts/backup_gcp"
+  description = "Script para realizar el backup cifrado y subirlo a GCP"
+  type        = "String"
+  value       = file("${path.module}/scripts/backup_gcp.sh")
+  overwrite   = true
+}
+
+resource "aws_ssm_parameter" "script_restore_gcp" {
+  name        = "/scripts/restore_gcp"
+  description = "Script para listar, descargar, descifrar y restaurar bases de datos desde GCP"
+  type        = "String"
+  value       = file("${path.module}/scripts/restore_gcp.sh")
+  overwrite   = true
+}
+
 

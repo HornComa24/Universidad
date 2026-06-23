@@ -46,8 +46,8 @@ if command -v mysqldump &>/dev/null; then
 
 elif command -v pg_dump &>/dev/null; then
     echo "[+] Motor detectado: PostgreSQL. Realizando dump..."
-    # Ejecutar pg_dump como el usuario 'postgres' del sistema para db_backup
-    sudo -u postgres pg_dump db_backup > $SQL_FILE
+    # Ejecutar pg_dump como el usuario 'postgres' del sistema para db_backup (desde /tmp para evitar warning de /root)
+    (cd /tmp && sudo -u postgres pg_dump db_backup) > $SQL_FILE
     
     if [ $? -eq 0 ]; then
         echo "[+] Cifrando backup con OpenSSL (AES-256)..."

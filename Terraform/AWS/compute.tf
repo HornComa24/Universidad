@@ -28,20 +28,20 @@ else
   sudo yum install -y google-cloud-cli
 fi
 
-# 2. Desempaquetar y ejecutar script de base de datos (MariaDB)
-echo "${base64encode(file("${path.module}/scripts/instalar_mariadb.sh"))}" | base64 -d > /tmp/instalar_mariadb.sh
+# 2. Descargar y ejecutar script de base de datos (MariaDB) desde AWS SSM
+aws ssm get-parameter --name "/scripts/instalar_mariadb" --query "Parameter.Value" --output text > /tmp/instalar_mariadb.sh
 chmod +x /tmp/instalar_mariadb.sh
 bash /tmp/instalar_mariadb.sh
 
-# 3. Desempaquetar y ejecutar script de población de datos
-echo "${base64encode(file("${path.module}/scripts/poblar_datos.sh"))}" | base64 -d > /tmp/poblar_datos.sh
+# 3. Descargar y ejecutar script de población de datos desde AWS SSM
+aws ssm get-parameter --name "/scripts/poblar_datos" --query "Parameter.Value" --output text > /tmp/poblar_datos.sh
 chmod +x /tmp/poblar_datos.sh
 bash /tmp/poblar_datos.sh
 
-# 4. Desempaquetar scripts de backup y restauracion directamente a /opt/scripts
+# 4. Descargar scripts de backup y restauración desde AWS SSM directamente a /opt/scripts
 mkdir -p /opt/scripts
-echo "${base64encode(file("${path.module}/scripts/backup_gcp.sh"))}" | base64 -d > /opt/scripts/backup_gcp.sh
-echo "${base64encode(file("${path.module}/scripts/restore_gcp.sh"))}" | base64 -d > /opt/scripts/restore_gcp.sh
+aws ssm get-parameter --name "/scripts/backup_gcp" --query "Parameter.Value" --output text > /opt/scripts/backup_gcp.sh
+aws ssm get-parameter --name "/scripts/restore_gcp" --query "Parameter.Value" --output text > /opt/scripts/restore_gcp.sh
 chmod +x /opt/scripts/backup_gcp.sh /opt/scripts/restore_gcp.sh
 
 # 4. Generar la configuración de credenciales para Workload Identity Federation (WIF) compatible con IMDSv2
@@ -110,20 +110,20 @@ else
   sudo yum install -y google-cloud-cli
 fi
 
-# 2. Desempaquetar y ejecutar script de base de datos (PostgreSQL)
-echo "${base64encode(file("${path.module}/scripts/instalar_postgresql.sh"))}" | base64 -d > /tmp/instalar_postgresql.sh
+# 2. Descargar y ejecutar script de base de datos (PostgreSQL) desde AWS SSM
+aws ssm get-parameter --name "/scripts/instalar_postgresql" --query "Parameter.Value" --output text > /tmp/instalar_postgresql.sh
 chmod +x /tmp/instalar_postgresql.sh
 bash /tmp/instalar_postgresql.sh
 
-# 3. Desempaquetar y ejecutar script de población de datos
-echo "${base64encode(file("${path.module}/scripts/poblar_datos.sh"))}" | base64 -d > /tmp/poblar_datos.sh
+# 3. Descargar y ejecutar script de población de datos desde AWS SSM
+aws ssm get-parameter --name "/scripts/poblar_datos" --query "Parameter.Value" --output text > /tmp/poblar_datos.sh
 chmod +x /tmp/poblar_datos.sh
 bash /tmp/poblar_datos.sh
 
-# 4. Desempaquetar scripts de backup y restauracion directamente a /opt/scripts
+# 4. Descargar scripts de backup y restauración desde AWS SSM directamente a /opt/scripts
 mkdir -p /opt/scripts
-echo "${base64encode(file("${path.module}/scripts/backup_gcp.sh"))}" | base64 -d > /opt/scripts/backup_gcp.sh
-echo "${base64encode(file("${path.module}/scripts/restore_gcp.sh"))}" | base64 -d > /opt/scripts/restore_gcp.sh
+aws ssm get-parameter --name "/scripts/backup_gcp" --query "Parameter.Value" --output text > /opt/scripts/backup_gcp.sh
+aws ssm get-parameter --name "/scripts/restore_gcp" --query "Parameter.Value" --output text > /opt/scripts/restore_gcp.sh
 chmod +x /opt/scripts/backup_gcp.sh /opt/scripts/restore_gcp.sh
 
 # 4. Generar la configuración de credenciales para Workload Identity Federation (WIF) compatible con IMDSv2
@@ -167,6 +167,7 @@ touch /var/log/backup_gcp.log
 (crontab -l 2>/dev/null | grep -v 'backup_gcp.sh'; echo '*/15 * * * * /opt/scripts/backup_gcp.sh >> /var/log/backup_gcp.log 2>&1') | crontab -
 EOF
 }
+
 
 # Crear la llave SSH en AWS dinámicamente usando la clave pública del usuario
 resource "aws_key_pair" "deployer" {
