@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control Académico - Panel de Infraestructura</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- RESET Y VARIABLES DE ESTILO SAAS --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #0b0f19; /* Fondo Oscuro Profundo tipo Cyber */
+            color: #f3f4f6; /* Texto Claro */
+            line-height: 1.5;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* --- SIDEBAR TECH DISCRETO --- */
+        .sidebar {
+            width: 240px;
+            background-color: #111827; /* Gris Oscuro Azulado */
+            border-right: 1px solid #1f2937;
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-logo {
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: #ffffff;
+            margin-bottom: 35px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-transform: uppercase;
+        }
+
+        .sidebar-logo .dot {
+            width: 8px;
+            height: 8px;
+            background-color: #6366f1; /* Acento Violeta Eléctrico */
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .menu-list {
+            list-style: none;
+            flex: 1;
+        }
+
+        .menu-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 14px;
+            color: #9ca3af;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            border-radius: 6px;
+            margin-bottom: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .menu-link.active, .menu-link:hover {
+            background-color: #1e1b4b; /* Fondo Violeta muy tenue */
+            color: #818cf8; /* Texto Violeta Claro */
+            border-left: 3px solid #6366f1;
+            padding-left: 11px; /* Compensa el borde */
+        }
+
+        /* --- CONTENEDOR DE CONTROL PRINCIPAL --- */
+        .main-viewport {
+            flex: 1;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        /* --- PANEL SUPERIOR --- */
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #1f2937;
+            padding-bottom: 20px;
+        }
+
+        .dashboard-header h1 {
+            font-size: 22px;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: -0.5px;
+        }
+
+        .status-pill {
+            background-color: #1f2937;
+            border: 1px solid #374151;
+            color: #9ca3af;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-indicator {
+            width: 6px;
+            height: 6px;
+            background-color: #10b981; /* Verde activo */
+            border-radius: 50%;
+        }
+
+        /* --- REJILLA DE TARJETAS DE DATOS --- */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background-color: #111827;
+            border: 1px solid #1f2937;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: 700;
+            color: #ffffff;
+            font-variant-numeric: tabular-nums; /* Alineación perfecta de números */
+        }
+
+        /* --- CUADRO DE ERROR TIPO TERMINAL --- */
+        .terminal-alert {
+            background-color: #1a1013;
+            border: 1px solid #dc2626;
+            color: #fca5a5;
+            padding: 14px 18px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 13px;
+            margin-bottom: 25px;
+            display: none;
+        }
+
+        /* --- MÓDULO DE TABLA INTEGRADA --- */
+        .table-wrapper {
+            background-color: #111827;
+            border: 1px solid #1f2937;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .table-title {
+            padding: 18px 24px;
+            font-size: 15px;
+            font-weight: 600;
+            color: #ffffff;
+            border-bottom: 1px solid #1f2937;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        th {
+            background-color: #1f2937;
+            color: #9ca3af;
+            font-weight: 600;
+            padding: 12px 24px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 14px 24px;
+            border-bottom: 1px solid #1f2937;
+            color: #e5e7eb;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background-color: #1f2937;
+        }
+
+        /* --- BADGES DE CONDICIÓN DEL CASO --- */
+        .condition-tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .cond-regular {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+
+        .cond-matriculado {
+            background-color: rgba(99, 102, 241, 0.1);
+            color: #818cf8;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="sidebar-logo">
+            <span class="dot"></span> Core.Academic
+        </div>
+        <ul class="menu-list">
+            <li><a href="#" class="menu-link active">Alumnos</a></li>
+            <li><a href="#" class="menu-link">Logs Syslog</a></li>
+            <li><a href="#" class="menu-link">Métricas Red</a></li>
+        </ul>
+        <div style="font-size: 11px; color: #4b5563; font-family: monospace;">
+            NODE::ACTIVE
+        </div>
+    </div>
+
+    <div class="main-viewport">
+        <div class="dashboard-header">
+            <h1>Sincronización de Matrículas</h1>
+            <div class="status-pill">
+                <span id="live-dot" class="status-indicator"></span>
+                <span id="env-text">CONNECTING</span>
+            </div>
+        </div>
+
+        <div id="error-console" class="terminal-alert">
+            [CRITICAL ERROR] :: Failed to resolve internal DNS "data-base" on port 5432. API microservice unreachable. Check docker logs.
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Registros en Memoria</div>
+                <div id="stat-count" class="stat-number">--</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Latencia de Canal (API)</div>
+                <div id="stat-latency" class="stat-number" style="font-size: 20px; color: #10b981; padding-top: 10px;">-- ms</div>
+            </div>
+        </div>
+
+        <div class="table-wrapper">
+            <div class="table-title">Registros Persistidos (PostgreSQL)</div>
+            <table id="data-table">
+                <thead>
+                    <tr>
+                        <th>UID</th>
+                        <th>Documento (RUT)</th>
+                        <th>Nombre Completo</th>
+                        <th>Condición Sistema</th>
+                    </tr>
+                </thead>
+                <tbody id="alumnos-rows">
+                    <tr>
+                        <td colspan="4" style="text-align: center; color: #9ca3af; padding: 24px; font-style: italic;">
+                            Esperando respuesta del microservicio...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const TARGET_ENDPOINT = "/api/v1/alumnos";
+
+        async function syncInfrastructure() {
+            const tbody = document.getElementById("alumnos-rows");
+            const envText = document.getElementById("env-text");
+            const liveDot = document.getElementById("live-dot");
+            const errorConsole = document.getElementById("error-console");
+            const statCount = document.getElementById("stat-count");
+            const statLatency = document.getElementById("stat-latency");
+
+            const startTime = performance.now();
+
+            try {
+                const response = await fetch(TARGET_ENDPOINT);
+                if (!response.ok) throw new Error("API downstream failure");
+
+                const payload = await response.json();
+                
+                // Calcular tiempo de respuesta real (Métrica de rendimiento)
+                const endTime = performance.now();
+                statLatency.innerText = `${Math.round(endTime - startTime)} ms`;
+
+                // Actualizar estado del entorno
+                envText.innerText = payload.ambiente.toUpperCase();
+                liveDot.style.backgroundColor = "#10b981";
+
+                // Actualizar métrica cuantitativa
+                statCount.innerText = payload.datos.length;
+
+                // Cargar filas dinámicas
+                tbody.innerHTML = "";
+                payload.datos.forEach(alumno => {
+                    const tagClass = alumno.condicion.toLowerCase() === "regular" ? "cond-regular" : "cond-matriculado";
+                    tbody.innerHTML += `
+                        <tr>
+                            <td style="font-family: monospace; color: #818cf8;">#0${alumno.id}</td>
+                            <td style="font-family: monospace;">${alumno.rut}</td>
+                            <td style="font-weight: 500; color: #ffffff;">${alumno.nombre}</td>
+                            <td><span class="condition-tag ${tagClass}">${alumno.condicion}</span></td>
+                        </tr>
+                    `;
+                });
+
+            } catch (err) {
+                console.error(err);
+                errorConsole.style.display = "block";
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#fca5a5; padding:24px; font-family:monospace;">[SYS_ERR] Communication breakdown.</td></tr>`;
+                envText.innerText = "OFFLINE";
+                liveDot.style.backgroundColor = "#dc2626";
+                statCount.innerText = "ERR";
+                statLatency.innerText = "-- ms";
+                statLatency.style.color = "#dc2626";
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", syncInfrastructure);
+    </script>
+</body>
+</html>

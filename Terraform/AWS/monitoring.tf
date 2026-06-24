@@ -36,8 +36,8 @@ resource "aws_cloudwatch_metric_alarm" "backup_failure_alarm" {
 }
 
 # 4. ALARMAS de Utilización de CPU (CPU > 85% durante 10 minutos)
-resource "aws_cloudwatch_metric_alarm" "cpu_alarm_mariadb" {
-  alarm_name          = "CPU-Critico-Server-1-MariaDB"
+resource "aws_cloudwatch_metric_alarm" "cpu_alarm_web" {
+  alarm_name          = "CPU-Critico-Server-1-Web"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 2
   metric_name         = "CPUUtilization"
@@ -45,15 +45,15 @@ resource "aws_cloudwatch_metric_alarm" "cpu_alarm_mariadb" {
   period              = 300 # 5 minutos
   statistic           = "Average"
   threshold           = 85
-  alarm_description   = "Se dispara si el uso promedio de CPU de Server-1 (MariaDB) supera el 85% durante 10 minutos."
+  alarm_description   = "Se dispara si el uso promedio de CPU de Server-1 (Web) supera el 85% durante 10 minutos."
   dimensions = {
-    InstanceId = aws_instance.vm_aws[0].id
+    InstanceId = aws_instance.vm_web.id
   }
   actions_enabled     = false
 }
 
-resource "aws_cloudwatch_metric_alarm" "cpu_alarm_postgresql" {
-  alarm_name          = "CPU-Critico-Server-2-PostgreSQL"
+resource "aws_cloudwatch_metric_alarm" "cpu_alarm_db" {
+  alarm_name          = "CPU-Critico-Server-2-Database"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 2
   metric_name         = "CPUUtilization"
@@ -61,16 +61,16 @@ resource "aws_cloudwatch_metric_alarm" "cpu_alarm_postgresql" {
   period              = 300 # 5 minutos
   statistic           = "Average"
   threshold           = 85
-  alarm_description   = "Se dispara si el uso promedio de CPU de Server-2 (PostgreSQL) supera el 85% durante 10 minutos."
+  alarm_description   = "Se dispara si el uso promedio de CPU de Server-2 (Database) supera el 85% durante 10 minutos."
   dimensions = {
-    InstanceId = aws_instance.vm_aws[1].id
+    InstanceId = aws_instance.vm_db.id
   }
   actions_enabled     = false
 }
 
 # 5. ALARMAS de Fallo de Comprobación de Estado de Hardware/Hipervisor (StatusCheckFailed)
-resource "aws_cloudwatch_metric_alarm" "status_check_mariadb" {
-  alarm_name          = "Fallo-Hardware-Server-1-MariaDB"
+resource "aws_cloudwatch_metric_alarm" "status_check_web" {
+  alarm_name          = "Fallo-Hardware-Server-1-Web"
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = 1
   metric_name         = "StatusCheckFailed"
@@ -80,13 +80,13 @@ resource "aws_cloudwatch_metric_alarm" "status_check_mariadb" {
   threshold           = 0
   alarm_description   = "Se dispara de inmediato si falla la comprobación de estado de hardware de AWS para Server-1."
   dimensions = {
-    InstanceId = aws_instance.vm_aws[0].id
+    InstanceId = aws_instance.vm_web.id
   }
   actions_enabled     = false
 }
 
-resource "aws_cloudwatch_metric_alarm" "status_check_postgresql" {
-  alarm_name          = "Fallo-Hardware-Server-2-PostgreSQL"
+resource "aws_cloudwatch_metric_alarm" "status_check_db" {
+  alarm_name          = "Fallo-Hardware-Server-2-Database"
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = 1
   metric_name         = "StatusCheckFailed"
@@ -96,7 +96,7 @@ resource "aws_cloudwatch_metric_alarm" "status_check_postgresql" {
   threshold           = 0
   alarm_description   = "Se dispara de inmediato si falla la comprobación de estado de hardware de AWS para Server-2."
   dimensions = {
-    InstanceId = aws_instance.vm_aws[1].id
+    InstanceId = aws_instance.vm_db.id
   }
   actions_enabled     = false
 }

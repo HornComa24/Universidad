@@ -32,10 +32,12 @@ fi
 echo "[+] Listando respaldos en gs://${BUCKET_NAME}..."
 if command -v mysqldump &>/dev/null; then
     PREFIX="backup_mariadb_"
+elif docker ps --format '{{.Names}}' | grep -q '^data-base$'; then
+    PREFIX="backup_postgres_"
 elif command -v pg_dump &>/dev/null; then
     PREFIX="backup_postgres_"
 else
-    echo "[!] Error: No se detectó motor de base de datos compatible en esta instancia."
+    echo "[!] Error: No se detectó motor de base de datos compatible ni contenedor 'data-base' en esta instancia."
     exit 1
 fi
 
@@ -78,15 +80,24 @@ if command -v mysql &>/dev/null; then
         echo "[!] Error al importar los datos en MariaDB."
     fi
 
+elif docker ps --format '{{.Names}}' | grep -q '^data-base$'; then
+    echo "[+] Contenedor detectado: PostgreSQL en Docker (data-base). Importando base de datos 'gestion_academica'..."
+    docker exec -i data-base psql -U postgres -d gestion_academica < $SQL_FILE
+    
+    if [ $? -eq 0 ]; then
+        echo "[✓] ¡Base de datos PostgreSQL en Docker restaurada con éxito!"
+    else
+        echo "[!] Error al importar los datos en PostgreSQL de Docker."
+    fi
+
 elif command -v psql &>/dev/null; then
-    echo "[+] Motor detectado: PostgreSQL. Importando base de datos 'db_backup'..."
-    # Ejecutar psql como el usuario postgres
+    echo "[+] Motor detectado: PostgreSQL nativo. Importando base de datos 'db_backup'..."
     sudo -u postgres psql -d db_backup < $SQL_FILE
     
     if [ $? -eq 0 ]; then
-        echo "[✓] ¡Base de datos PostgreSQL restaurada con éxito!"
+        echo "[✓] ¡Base de datos PostgreSQL nativa restaurada con éxito!"
     else
-        echo "[!] Error al importar los datos en PostgreSQL."
+        echo "[!] Error al importar los datos en PostgreSQL nativa."
     fi
 fi
 

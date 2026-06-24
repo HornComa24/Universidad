@@ -2,15 +2,16 @@
 output "detalles_red_servidores" {
   description = "IPs y nombres DNS asignados por AWS"
 
-  # Construye un mapa (objeto) con los datos de las instancias
   value = {
-    for instance in aws_instance.vm_aws :
-
-    # Si tiene el tag Name lo usa, si no, usa su ID de instancia para que nunca falle el bucle
-    lookup(instance.tags, "Name", instance.id) => {
-      ip_privada = instance.private_ip
-      ip_publica = instance.public_ip
-      dns        = instance.private_dns
+    "Server-1" = {
+      ip_privada = aws_instance.vm_web.private_ip
+      ip_publica = aws_instance.vm_web.public_ip
+      dns        = aws_instance.vm_web.private_dns
+    }
+    "Server-2" = {
+      ip_privada = aws_instance.vm_db.private_ip
+      ip_publica = aws_instance.vm_db.public_ip
+      dns        = aws_instance.vm_db.private_dns
     }
   }
 }

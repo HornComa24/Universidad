@@ -35,30 +35,6 @@ resource "aws_ssm_parameter" "gcp_backup_bucket" {
   }
 }
 
-resource "aws_ssm_parameter" "script_instalar_mariadb" {
-  name        = "/scripts/instalar_mariadb"
-  description = "Script para instalar y configurar MariaDB"
-  type        = "String"
-  value       = file("${path.module}/scripts/instalar_mariadb.sh")
-  overwrite   = true
-}
-
-resource "aws_ssm_parameter" "script_instalar_postgresql" {
-  name        = "/scripts/instalar_postgresql"
-  description = "Script para instalar y configurar PostgreSQL"
-  type        = "String"
-  value       = file("${path.module}/scripts/instalar_postgresql.sh")
-  overwrite   = true
-}
-
-resource "aws_ssm_parameter" "script_poblar_datos" {
-  name        = "/scripts/poblar_datos"
-  description = "Script para poblar de datos aleatorios la base de datos"
-  type        = "String"
-  value       = file("${path.module}/scripts/poblar_datos.sh")
-  overwrite   = true
-}
-
 resource "aws_ssm_parameter" "script_backup_gcp" {
   name        = "/scripts/backup_gcp"
   description = "Script para realizar el backup cifrado y subirlo a GCP"
@@ -74,5 +50,23 @@ resource "aws_ssm_parameter" "script_restore_gcp" {
   value       = file("${path.module}/scripts/restore_gcp.sh")
   overwrite   = true
 }
+
+# =========================================================================
+# EMPAQUETADO Y SUBIDA DE LA APLICACIÓN DOCKER A S3
+# =========================================================================
+
+data "archive_file" "docker_app_zip" {
+  type        = "zip"
+  source_dir  = "${path.module}/../../Docker/DOCKER-academic-managment"
+  output_path = "${path.module}/docker_app.zip"
+}
+
+resource "aws_s3_object" "docker_app_upload" {
+  bucket = aws_s3_bucket.storage_principal.id
+  key    = "docker_app.zip"
+  source = data.archive_file.docker_app_zip.output_path
+  etag   = data.archive_file.docker_app_zip.output_sha
+}
+
 
 

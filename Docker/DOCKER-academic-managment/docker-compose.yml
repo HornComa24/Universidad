@@ -1,0 +1,57 @@
+version: "0.1"
+
+services:
+  app:
+    build: 
+      context: ./app/
+      dockerfile: Dockerfile
+    container_name: app-font
+    ports:
+      - "80:80"
+    networks:
+      - red-frontend
+    depends_on:
+      - api
+    restart: always
+
+  api:
+    build:
+      context: ./api/
+      dockerfile: Dockerfile
+    container_name: api-backend
+    ports:
+      - "8081:8000"
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=data-base
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=instituto_secreto_2026
+      - DB_NAME=gestion_academica
+    networks:
+      - red-frontend
+      - red-backend
+    restart: always
+  
+  data:
+    image: postgres:15-alpine
+    container_name: data-base
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=instituto_secreto_2026
+      - POSTGRES_DB=gestion_academica
+    ports:
+      - "5432:5432"
+    volumes:
+      - area_almacenamiento_seguro:/var/lib/postgresql/data
+      - ./data/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - red-backend
+    restart: unless-stopped
+
+volumes:
+  area_almacenamiento_seguro:
+
+networks:
+  red-frontend:
+  red-backend:

@@ -44,9 +44,22 @@ if command -v mysqldump &>/dev/null; then
         echo "[!] Error al respaldar MariaDB."
     fi
 
+elif docker ps --format '{{.Names}}' | grep -q '^data-base$'; then
+    echo "[+] Contenedor detectado: PostgreSQL en Docker (data-base). Realizando dump..."
+    docker exec data-base pg_dump -U postgres gestion_academica > $SQL_FILE
+    
+    if [ $? -eq 0 ]; then
+        echo "[+] Cifrando backup con OpenSSL (AES-256)..."
+        openssl enc -aes-256-cbc -salt -pbkdf2 -pass pass:PasswordRespaldo123! -in $SQL_FILE -out $ENC_FILE
+        
+        echo "[+] Subiendo backup cifrado a GCP Cloud Storage (gs://${BUCKET_NAME})..."
+        gcloud storage cp $ENC_FILE gs://${BUCKET_NAME}/backup_postgres_$(date +%F_%H%M%S).sql.enc
+    else
+        echo "[!] Error al respaldar PostgreSQL desde Docker."
+    fi
+
 elif command -v pg_dump &>/dev/null; then
-    echo "[+] Motor detectado: PostgreSQL. Realizando dump..."
-    # Ejecutar pg_dump como el usuario 'postgres' del sistema para db_backup (desde /tmp para evitar warning de /root)
+    echo "[+] Motor detectado: PostgreSQL nativo. Realizando dump..."
     (cd /tmp && sudo -u postgres pg_dump db_backup) > $SQL_FILE
     
     if [ $? -eq 0 ]; then
@@ -56,10 +69,10 @@ elif command -v pg_dump &>/dev/null; then
         echo "[+] Subiendo backup cifrado a GCP Cloud Storage (gs://${BUCKET_NAME})..."
         gcloud storage cp $ENC_FILE gs://${BUCKET_NAME}/backup_postgres_$(date +%F_%H%M%S).sql.enc
     else
-        echo "[!] Error al respaldar PostgreSQL."
+        echo "[!] Error al respaldar PostgreSQL nativo."
     fi
 else
-    echo "[!] No se detectó un motor de base de datos compatible (mysqldump / pg_dump)."
+    echo "[!] No se detectó un motor de base de datos compatible (mysqldump / pg_dump / Docker data-base)."
 fi
 
 # 4. Limpieza de datos sensibles locales
