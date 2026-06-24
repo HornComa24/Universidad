@@ -9,10 +9,10 @@ data "http" "mi_ip_publica" {
 
 resource "aws_security_group" "sg_web" {
   name        = "sg_web_servidores"
-  description = "Permitir SSH, HTTP y trafico interno para servidores web"
-  vpc_id      = aws_vpc.mi_vpc.id # Asegúrate de que en main.tf o network.tf tu VPC se llame mi_vpc
+  description = "Permitir SSH, HTTP/HTTPS publico para Server-1 (Web)"
+  vpc_id      = aws_vpc.mi_vpc.id
 
-  # Acceso SSH restringido a orígenes conocidos
+  # Acceso SSH restringido a la IP del desarrollador (mínimo privilegio)
   ingress {
     description = "SSH desde origen restringido"
     from_port   = 22
@@ -23,43 +23,25 @@ resource "aws_security_group" "sg_web" {
     ]
   }
 
-  # Acceso SSH exclusivo para el rango de la subred de GCP (Federación/VPN)
+  # Acceso HTTP para probar el servicio web Apache (Etapa 4 & 5)
   ingress {
-    description = "SSH desde la red de backup de GCP"
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["10.1.0.0/24"]
-  }
-
-  # Acceso HTTP para probar el servicio web Apache
-  ingress {
-    description = "Trafico HTTP comercial"
+    description = "Trafico HTTP comercial publico"
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  # Acceso HTTPS para tráfico seguro comercial
+  # Acceso HTTPS para tráfico seguro
   ingress {
-    description = "Trafico HTTPS seguro comercial"
+    description = "Trafico HTTPS seguro publico"
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  # Permitir que las máquinas se hablen entre sí internamente sin restricciones
-  ingress {
-    description = "Comunicacion interna completa entre instancias del SG"
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    self        = true
-  }
-
-  # Salida permitida a internet (esencial para que rclone llegue a las APIs públicas de GCP)
+  # Salida permitida a internet
   egress {
     description = "Salida total a Internet"
     from_port   = 0
@@ -69,6 +51,65 @@ resource "aws_security_group" "sg_web" {
   }
 
   tags = {
-    Name = "sg-web-servidores"
+    Name = "sg-web-publico"
+  }
+}
+
+# =========================================================================
+# 2. GRUPO DE SEGURIDAD PARA BASE DE DATOS PRIVADA (Server-2) - MINIMO PRIVILEGIO
+# =========================================================================
+
+resource "aws_security_group" "sg_db" {
+  name        = "sg_db_privado"
+  description = "Aislar Server-2 bloqueando trafico de internet y aceptando solo peticiones de sg_web"
+  vpc_id      = aws_vpc.mi_vpc.id
+
+  # Permite SSH (22) únicamente desde el servidor web público (sg_web)
+  ingress {
+    description     = "SSH desde Bastion (Server-1)"
+    from_port       = 22
+    to_port         = 22
+    protocol        = "tcp"
+    security_groups = [aws_security_group.sg_web.id]
+  }
+
+  # Permite PostgreSQL (5432) únicamente desde el servidor web público (sg_web)
+  ingress {
+    description     = "PostgreSQL solo desde Server-1"
+    from_port       = 5432
+    to_port         = 5432
+    protocol        = "tcp"
+    security_groups = [aws_security_group.sg_web.id]
+  }
+
+  # Permite MariaDB (3306) únicamente desde el servidor web público (sg_web) en caso de conectividad
+  ingress {
+    description     = "MariaDB solo desde Server-1"
+    from_port       = 3306
+    to_port         = 3306
+    protocol        = "tcp"
+    security_groups = [aws_security_group.sg_web.id]
+  }
+
+  # Permite ICMP (ping) desde el servidor web público para probar conectividad (Etapa 4)
+  ingress {
+    description     = "Ping de diagnostico desde Server-1"
+    from_port       = 8 # Tipo ICMP Echo Request
+    to_port         = 0 # Código ICMP Echo Request es 0
+    protocol        = "icmp"
+    security_groups = [aws_security_group.sg_web.id]
+  }
+
+  # Salida permitida a internet (Crucial: pasa por NAT Gateway para subir backups a GCP o bajar paquetes)
+  egress {
+    description = "Salida total via NAT Gateway"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "sg-db-privado"
   }
 }

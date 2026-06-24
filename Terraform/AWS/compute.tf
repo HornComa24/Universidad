@@ -203,9 +203,9 @@ resource "aws_instance" "vm_aws" {
 
   iam_instance_profile = aws_iam_instance_profile.backup_profile.name
 
-  associate_public_ip_address = true
+  associate_public_ip_address = count.index == 0 ? true : false
   key_name                    = aws_key_pair.deployer.key_name
-  vpc_security_group_ids      = [aws_security_group.sg_web.id]
+  vpc_security_group_ids      = [count.index == 0 ? aws_security_group.sg_web.id : aws_security_group.sg_db.id]
 
   user_data                   = count.index == 0 ? local.user_data_mariadb : local.user_data_postgres
   user_data_replace_on_change = true

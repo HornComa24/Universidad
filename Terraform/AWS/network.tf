@@ -25,7 +25,7 @@ resource "aws_subnet" "mis_subredes" {
   availability_zone = var.zonas[count.index]
 
   tags = {
-    Name = "subnet-publica-${count.index + 1}"
+    Name = count.index == 0 ? "subnet-publica" : "subnet-privada"
   }
 }
 
@@ -40,10 +40,10 @@ resource "aws_internet_gateway" "gw" {
 
 
 # =========================================================================
-# 2. ENRUTAMIENTO (TABLAS DE RUTAS Y ASOCIACIONES)
+# 2. ENRUTAMIENTO Y CONECTIVIDAD (NAT GATEWAY PARA SUBRED PRIVADA)
 # =========================================================================
 
-# Asegurarte de que la tabla de rutas de tu subred tenga la ruta al internet (0.0.0.0/0)
+# Tabla de rutas para la Subred Pública (Hacia Internet Gateway)
 resource "aws_route_table" "public_rt" {
   vpc_id = aws_vpc.mi_vpc.id
 
@@ -57,9 +57,48 @@ resource "aws_route_table" "public_rt" {
   }
 }
 
-# Asociar la tabla de rutas a tus subredes de forma dinámica
-resource "aws_route_table_association" "a" {
-  count          = 2
-  subnet_id      = aws_subnet.mis_subredes[count.index].id
+# Asociar tabla pública a Subred 1 (Pública)
+resource "aws_route_table_association" "public_assoc" {
+  subnet_id      = aws_subnet.mis_subredes[0].id
   route_table_id = aws_route_table.public_rt.id
 }
+
+# Reservar IP elástica para el NAT Gateway
+resource "aws_eip" "nat_eip" {
+  domain = "vpc"
+  tags = {
+    Name = "eip-nat-gateway"
+  }
+}
+
+# Crear NAT Gateway en la subred pública para dar salida segura a la privada
+resource "aws_nat_gateway" "nat" {
+  allocation_id = aws_eip.nat_eip.id
+  subnet_id     = aws_subnet.mis_subredes[0].id # Debe estar en la subred pública
+  depends_on    = [aws_internet_gateway.gw]
+
+  tags = {
+    Name = "nat-gateway-principal"
+  }
+}
+
+# Tabla de rutas para la Subred Privada (Hacia NAT Gateway)
+resource "aws_route_table" "private_rt" {
+  vpc_id = aws_vpc.mi_vpc.id
+
+  route {
+    cidr_block     = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.nat.id
+  }
+
+  tags = {
+    Name = "tabla-rutas-privada"
+  }
+}
+
+# Asociar tabla privada a Subred 2 (Privada)
+resource "aws_route_table_association" "private_assoc" {
+  subnet_id      = aws_subnet.mis_subredes[1].id
+  route_table_id = aws_route_table.private_rt.id
+}
+
