@@ -44,7 +44,7 @@ if command -v mysqldump &>/dev/null; then
         echo "[!] Error al respaldar MariaDB."
     fi
 
-elif docker ps --format '{{.Names}}' | grep -q '^data-base$'; then
+elif [ -n "$(docker ps --filter "name=^data-base$" --filter "status=running" --quiet 2>/dev/null)" ]; then
     echo "[+] Contenedor detectado: PostgreSQL en Docker (data-base). Realizando dump..."
     docker exec data-base pg_dump -U postgres gestion_academica > $SQL_FILE
     

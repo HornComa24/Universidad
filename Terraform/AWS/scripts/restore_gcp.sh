@@ -32,7 +32,7 @@ fi
 echo "[+] Listando respaldos en gs://${BUCKET_NAME}..."
 if command -v mysqldump &>/dev/null; then
     PREFIX="backup_mariadb_"
-elif docker ps --format '{{.Names}}' | grep -q '^data-base$'; then
+elif [ -n "$(docker ps --filter "name=^data-base$" --filter "status=running" --quiet 2>/dev/null)" ]; then
     PREFIX="backup_postgres_"
 elif command -v pg_dump &>/dev/null; then
     PREFIX="backup_postgres_"
@@ -80,7 +80,7 @@ if command -v mysql &>/dev/null; then
         echo "[!] Error al importar los datos en MariaDB."
     fi
 
-elif docker ps --format '{{.Names}}' | grep -q '^data-base$'; then
+elif [ -n "$(docker ps --filter "name=^data-base$" --filter "status=running" --quiet 2>/dev/null)" ]; then
     echo "[+] Contenedor detectado: PostgreSQL en Docker (data-base). Importando base de datos 'gestion_academica'..."
     docker exec -i data-base psql -U postgres -d gestion_academica < $SQL_FILE
     
