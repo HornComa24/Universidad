@@ -46,7 +46,7 @@ if command -v mysqldump &>/dev/null; then
 
 elif [ -n "$(docker ps --filter "name=^data-base$" --filter "status=running" --quiet 2>/dev/null)" ]; then
     echo "[+] Contenedor detectado: PostgreSQL en Docker (data-base). Realizando dump..."
-    docker exec data-base pg_dump -U postgres gestion_academica > $SQL_FILE
+    docker exec -e PGPASSWORD=instituto_secreto_2026 data-base pg_dump -U postgres gestion_academica > $SQL_FILE
     
     if [ $? -eq 0 ]; then
         echo "[+] Cifrando backup con OpenSSL (AES-256)..."

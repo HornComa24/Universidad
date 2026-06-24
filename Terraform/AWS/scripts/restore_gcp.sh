@@ -70,7 +70,7 @@ if command -v mysql &>/dev/null; then
 
 elif [ -n "$(docker ps --filter "name=^data-base$" --filter "status=running" --quiet 2>/dev/null)" ]; then
     echo "[+] Importando datos en PostgreSQL de Docker (data-base)..."
-    docker exec -i data-base psql -U postgres -d gestion_academica < $SQL_FILE
+    docker exec -i -e PGPASSWORD=instituto_secreto_2026 data-base psql -U postgres -d gestion_academica < $SQL_FILE
     if [ $? -eq 0 ]; then echo "[✓] PostgreSQL en Docker restaurada con éxito!"; else echo "[!] Falló importación en Docker."; fi
 
 elif command -v psql &>/dev/null; then
