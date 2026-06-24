@@ -1,9 +1,10 @@
 #!/bin/bash
 # =========================================================================
-# SCRIPT DE CONFIGURACIÓN DE ENTORNO - setup_env.sh
+# SCRIPT DE CONFIGURACIÓN DE ENFORNO - setup_env.sh
 # =========================================================================
 # Este script verifica y configura los prerrequisitos locales para
-# el despliegue de la infraestructura multi-cloud (AWS + GCP).
+# el despliegue de la infraestructura multi-cloud (AWS + GCP), e instala
+# automáticamente Docker en sistemas Linux compatibles.
 
 # Colores para la terminal
 VERDE='\033[0;32m'
@@ -51,7 +52,61 @@ else
 fi
 
 # -------------------------------------------------------------------------
-# 2. VERIFICACIÓN DE BINARIOS REQUERIDOS
+# 2. INSTALACIÓN / VERIFICACIÓN DE DOCKER
+# -------------------------------------------------------------------------
+echo -e "\n${AZUL}[+] Verificando estado de Docker...${NC}"
+
+if command -v docker &>/dev/null; then
+    echo -e "${VERDE}[✓] Docker está instalado. (${NC}$(docker --version)${VERDE})${NC}"
+else
+    echo -e "${AMARILLO}[!] Docker NO está instalado en este sistema.${NC}"
+    
+    # Detectar Sistema Operativo
+    OS_TYPE=$(uname -s | tr '[:upper:]' '[:lower:]')
+    
+    if [ "$OS_TYPE" = "linux" ]; then
+        echo -e "${AZUL}[+] Detectado sistema operativo Linux. Intentando instalar Docker automáticamente...${NC}"
+        
+        # Detectar Gestor de Paquetes
+        if command -v apt-get &>/dev/null; then
+            echo -e "${AZUL}[+] Instalando Docker vía APT (Debian/Ubuntu)...${NC}"
+            sudo apt-get update && sudo apt-get install -y docker.io docker-compose
+        elif command -v dnf &>/dev/null; then
+            echo -e "${AZUL}[+] Instalando Docker vía DNF (RHEL/Fedora/Amazon Linux)...${NC}"
+            sudo dnf install -y docker
+        elif command -v yum &>/dev/null; then
+            echo -e "${AZUL}[+] Instalando Docker vía YUM (CentOS)...${NC}"
+            sudo yum install -y docker
+        else
+            echo -e "${ROJO}[!] No se reconoció un gestor de paquetes soportado para instalación automática.${NC}"
+            echo -e "${AMARILLO}Por favor, instale Docker manualmente para su distribución de Linux.${NC}"
+        fi
+        
+        # Habilitar e iniciar servicio Docker en Linux si se instaló
+        if command -v docker &>/dev/null; then
+            echo -e "${AZUL}[+] Iniciando y habilitando servicio Docker...${NC}"
+            sudo systemctl enable --now docker 2>/dev/null
+            
+            # Agregar usuario al grupo docker para evitar usar sudo siempre
+            echo -e "${AZUL}[+] Agregando usuario $USER al grupo 'docker' (requiere reiniciar sesión)...${NC}"
+            sudo usermod -aG docker "$USER" 2>/dev/null
+            echo -e "${VERDE}[✓] Docker instalado e iniciado correctamente.${NC}"
+        fi
+        
+    elif [[ "$OS_TYPE" == *"mingw"* || "$OS_TYPE" == *"cygwin"* || "$OS_TYPE" == *"msys"* ]]; then
+        echo -e "${AMARILLO}[!] Detectado entorno Windows (Git Bash/WSL).${NC}"
+        echo -e "    -> Por favor, instale Docker Desktop desde: ${AZUL}https://www.docker.com/products/docker-desktop/${NC}"
+    elif [ "$OS_TYPE" = "darwin" ]; then
+        echo -e "${AMARILLO}[!] Detectado macOS.${NC}"
+        echo -e "    -> Por favor, instale Docker Desktop o use Homebrew: ${AZUL}brew install --cask docker${NC}"
+    else
+        echo -e "${ROJO}[!] Sistema operativo no identificado de forma automática.${NC}"
+        echo -e "    -> Por favor, instale Docker de forma manual desde el sitio oficial de Docker.${NC}"
+    fi
+fi
+
+# -------------------------------------------------------------------------
+# 3. VERIFICACIÓN DE OTRAS HERRAMIENTAS CLI REQUERIDAS
 # -------------------------------------------------------------------------
 echo -e "\n${AZUL}[+] Verificando herramientas CLI requeridas...${NC}"
 
@@ -71,7 +126,7 @@ check_binary "aws" "Instalar AWS CLI (https://docs.aws.amazon.com/cli/latest/use
 check_binary "gcloud" "Instalar Google Cloud SDK (https://cloud.google.com/sdk/docs/install)"
 
 # -------------------------------------------------------------------------
-# 3. ASEGURAR PERMISOS DE EJECUCIÓN
+# 4. ASEGURAR PERMISOS DE EJECUCIÓN
 # -------------------------------------------------------------------------
 echo -e "\n${AZUL}[+] Asegurando permisos de ejecución en los scripts de despliegue...${NC}"
 chmod +x AWS/desplegar.sh 2>/dev/null
@@ -83,7 +138,8 @@ fi
 
 echo -e "\n${VERDE}=== Configuración de entorno finalizada con éxito ===${NC}"
 echo -e "${AMARILLO}Próximos pasos recomendados:${NC}"
-echo -e "1. Ejecutar: ${AZUL}gcloud auth application-default login${NC} (Para autenticar GCP)"
-echo -e "2. Ejecutar: ${AZUL}aws configure${NC} (Para configurar credenciales de AWS)"
-echo -e "3. Desplegar GCP: ${AZUL}cd GCP && terraform init && terraform apply${NC}"
-echo -e "4. Desplegar AWS: ${AZUL}cd ../AWS && ./desplegar.sh${NC}"
+echo -e "1. ${AMARILLO}(Si se instaló Docker recién en Linux)${NC} Reinicie sesión para aplicar permisos de Docker sin sudo."
+echo -e "2. Ejecutar: ${AZUL}gcloud auth application-default login${NC} (Para autenticar GCP)"
+echo -e "3. Ejecutar: ${AZUL}aws configure${NC} (Para configurar credenciales de AWS)"
+echo -e "4. Desplegar GCP: ${AZUL}cd GCP && terraform init && terraform apply${NC}"
+echo -e "5. Desplegar AWS: ${AZUL}cd ../AWS && ./desplegar.sh${NC}"

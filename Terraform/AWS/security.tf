@@ -82,14 +82,7 @@ resource "aws_security_group" "sg_db" {
     security_groups = [aws_security_group.sg_web.id]
   }
 
-  # Permite MariaDB (3306) únicamente desde el servidor web público (sg_web) en caso de conectividad
-  ingress {
-    description     = "MariaDB solo desde Server-1"
-    from_port       = 3306
-    to_port         = 3306
-    protocol        = "tcp"
-    security_groups = [aws_security_group.sg_web.id]
-  }
+
 
   # Permite ICMP (ping) desde el servidor web público para probar conectividad (Etapa 4)
   ingress {
